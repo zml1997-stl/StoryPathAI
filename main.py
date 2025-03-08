@@ -82,11 +82,13 @@ async def generate_story_submit(
         for choice in choice_objects:
             db.refresh(choice)
 
+        # Prepare zipped choices with IDs
+        choice_data = [(choice.text, choice.id) for choice in choice_objects]
+
         return templates.TemplateResponse("story.html", {
             "request": request,
             "story": story_data["story"],
-            "choices": [choice.text for choice in choice_objects],
-            "choice_ids": [choice.id for choice in choice_objects],
+            "choices": choice_data,  # List of (text, id) tuples
             "story_id": story.id
         })
     except Exception as e:
@@ -129,11 +131,13 @@ async def continue_story(request: Request, story_id: int, choice_id: int, db: Se
         for choice in choice_objects:
             db.refresh(choice)
 
+        # Prepare zipped choices with IDs
+        choice_data = [(choice.text, choice.id) for choice in choice_objects]
+
         return templates.TemplateResponse("story.html", {
             "request": request,
             "story": story_data["story"],
-            "choices": [choice.text for choice in choice_objects],
-            "choice_ids": [choice.id for choice in choice_objects],
+            "choices": choice_data,  # List of (text, id) tuples
             "story_id": story_id
         })
     except Exception as e:
