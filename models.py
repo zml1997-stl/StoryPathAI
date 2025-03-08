@@ -1,14 +1,27 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
+
+# User model from auth.py
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, nullable=False)
+    email = Column(String, unique=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
+    is_active = Column(Boolean, default=True)
+    is_superuser = Column(Boolean, default=False)
+    stories = relationship("Story", back_populates="user")
+    sessions = relationship("SessionParticipant", back_populates="user")
 
 class Story(Base):
     __tablename__ = "stories"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     title = Column(String, nullable=False)
+    user = relationship("User", back_populates="stories")
     parts = relationship("StoryPart", back_populates="story")
     session = relationship("Session", back_populates="story", uselist=False)
 
@@ -44,3 +57,4 @@ class SessionParticipant(Base):
     session_id = Column(Integer, ForeignKey("sessions.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     session = relationship("Session", back_populates="participants")
+    user = relationship("User", back_populates="sessions")
