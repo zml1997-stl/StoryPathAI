@@ -79,8 +79,8 @@
     </div>
     <div class="choices">
         <h2>Choose Your Path</h2>
-        {% for choice, choice_id in choices|zip(choice_ids) %}
-            <a href="/continue/{{ story_id }}/{{ choice_id }}" class="choice-btn">{{ choice }}</a>
+        {% for choice_text, choice_id in choices %}
+            <a href="/continue/{{ story_id }}/{{ choice_id }}" class="choice-btn">{{ choice_text }}</a>
         {% endfor %}
     </div>
     <p><a href="/generate">Start a New Story</a></p>
