@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoryPath - Session</title>
+    <style>
+        body { font-family: 'Georgia', serif; background: #f0e4ff; text-align: center; padding: 20px; margin: 0; color: #333; }
+        h1 { color: #6a0dad; font-size: 2em; margin-bottom: 20px; }
+        .story { background: #fff; padding: 20px; border-radius: 10px; text-align: justify; max-width: 90%; margin: 0 auto 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); line-height: 1.6; font-size: 1.1em; }
+        .story p { margin: 0 0 1em; }
+        .chosen { color: #ff4500; font-style: italic; display: block; margin: 1em 0; }
+        .choices { max-width: 90%; margin: 20px auto; }
+        .choices h2 { color: #6a0dad; font-size: 1.5em; margin-bottom: 15px; }
+        .choice-btn { background: #6a0dad; color: white; padding: 10px; border: none; border-radius: 5px; font-size: 1em; margin: 5px 0; cursor: pointer; width: 100%; text-align: left; display: block; transition: background 0.3s ease, transform 0.2s ease; }
+        .choice-btn:hover { background: #8a2be2; transform: scale(1.02); }
+        a, button { color: #6a0dad; text-decoration: none; font-size: 1em; padding: 10px; display: inline-block; margin: 5px; }
+        a:hover { text-decoration: underline; }
+        .join-btn { background: #6a0dad; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .join-btn:hover { background: #8a2be2; }
+    </style>
+</head>
+<body>
+    <h1>Collaborative Story Session</h1>
+    <div class="story">
+        {{ story|safe }}
+    </div>
+    {% if is_participant and choices %}
+        <div class="choices">
+            <h2>Your Turn to Choose</h2>
+            {% for choice_text, choice_id in choices %}
+                <form method="post" action="/session/{{ session_id }}/{{ choice_id }}">
+                    <button type="submit" class="choice-btn">{{ choice_text }}</button>
+                </form>
+            {% endfor %}
+        </div>
+    {% endif %}
+    {% if not is_participant %}
+        <form method="post" action="/session/{{ session_id }}/join">
+            <button type="submit" class="join-btn">Join Session</button>
+        </form>
+    {% endif %}
+    <p>Participants: {{ participants|length }}</p>
+    <a href="/sessions">Back to Sessions</a>
+</body>
+</html>
