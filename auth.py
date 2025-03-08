@@ -1,24 +1,23 @@
 import os
-from fastapi_users import FastAPIUsers, BaseUserManager, IntegerIDMixin  # Removed Integer
+from fastapi_users import FastAPIUsers, BaseUserManager, IntegerIDMixin
 from fastapi_users.authentication import CookieTransport, AuthenticationBackend, JWTStrategy
 from fastapi_users.db import SQLAlchemyUserDatabase
-from models import Base, User
-from database import get_db
+from models import User
+from database import get_async_db  # Updated to async import
 from fastapi import Depends
-from sqlalchemy.orm import Session
 
 # Use the secret key from Heroku config vars, with a fallback for local testing
 SECRET = os.environ.get("SECRET_KEY", "fallback-secret-for-local-only")
 
-class UserManager(IntegerIDMixin, BaseUserManager[User, int]):  # Changed Integer to int
+class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
     reset_password_token_secret = SECRET
     verification_token_secret = SECRET
 
     async def on_after_register(self, user: User, request=None):
         print(f"User {user.username} has registered.")
 
-async def get_user_manager(db: Session = Depends(get_db)):
-    yield UserManager(SQLAlchemyUserDatabase(User, db))
+async def get_user_manager(user_db=Depends(SQLAlchemyUserDatabase(User, get_async_db))):
+    yield UserManager(user_db)
 
 cookie_transport = CookieTransport(cookie_max_age=3600)
 
