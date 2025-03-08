@@ -16,7 +16,11 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
     async def on_after_register(self, user: User, request=None):
         print(f"User {user.username} has registered.")
 
-async def get_user_manager(user_db=Depends(SQLAlchemyUserDatabase(User, get_async_db))):
+# Define a callable function to create SQLAlchemyUserDatabase
+async def get_user_db(db=Depends(get_async_db)):
+    yield SQLAlchemyUserDatabase(User, db)
+
+async def get_user_manager(user_db=Depends(get_user_db)):
     yield UserManager(user_db)
 
 cookie_transport = CookieTransport(cookie_max_age=3600)
