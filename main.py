@@ -40,6 +40,7 @@ async def register_form(request: Request):
 # Register endpoint with form data
 @app.post("/auth/register")
 async def register(
+    request: Request,  # Added request parameter
     username: str = Form(...),
     email: str = Form(...),
     password: str = Form(...),
