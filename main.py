@@ -26,6 +26,119 @@ app.include_router(
     tags=["auth"],
 )
 
+# ... (previous imports and auth setup)
+
+@app.get("/sessions")
+async def list_sessions(request: Request, db: Session = Depends(get_db), user: User = Depends(current_active_user)):
+    sessions = db.query(Session).all()
+    return templates.TemplateResponse("sessions.html", {
+        "request": request,
+        "sessions": sessions,
+        "user": user
+    })
+
+@app.post("/sessions/new")
+async def create_session(
+    request: Request,
+    genre: str = Form(...),
+    prompt: str = Form(default=""),
+    db: Session = Depends(get_db),
+    user: User = Depends(current_active_user)
+):
+    story = Story(user_id=user.id, title=f"{genre.capitalize()} Tale: {prompt[:20] or 'Untitled'}...")
+    db.add(story)
+    db.commit()
+    db.refresh(story)
+
+    story_data = generate_story(prompt, genre)
+    story_part = StoryPart(story_id=story.id, text=story_data["story"])
+    db.add(story_part)
+    db.commit()
+    db.refresh(story_part)
+
+    choice_objects = [ChoiceOption(story_part_id=story_part.id, text=text) for text in story_data["choices"]]
+    db.add_all(choice_objects)
+    db.commit()
+
+    session = Session(story_id=story.id)
+    db.add(session)
+    db.commit()
+    db.refresh(session)
+
+    participant = SessionParticipant(session_id=session.id, user_id=user.id)
+    db.add(participant)
+    db.commit()
+
+    return RedirectResponse(url=f"/session/{session.id}", status_code=303)
+
+@app.get("/session/{session_id}")
+async def view_session(request: Request, session_id: int, db: Session = Depends(get_db), user: User = Depends(current_active_user)):
+    session = db.query(Session).filter(Session.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    story = session.story
+    parts = db.query(StoryPart).filter(StoryPart.story_id == story.id).order_by(StoryPart.id).all()
+    current_part = parts[-1]
+    choices = db.query(ChoiceOption).filter(ChoiceOption.story_part_id == current_part.id).all()
+    participants = db.query(SessionParticipant).filter(SessionParticipant.session_id == session_id).all()
+    is_participant = any(p.user_id == user.id for p in participants)
+    story_text = []
+    for i, part in enumerate(parts):
+        story_text.append(part.text)
+        if i < len(parts) - 1:
+            next_part = parts[i + 1]
+            chosen = db.query(ChoiceOption).filter(ChoiceOption.story_part_id == part.id, ChoiceOption.next_part_id == next_part.id).first()
+            if chosen:
+                story_text.append(f"<span class='chosen'>{chosen.text}</span>")
+    return templates.TemplateResponse("session.html", {
+        "request": request,
+        "story": "\n\n".join(story_text),
+        "choices": [(choice.text, choice.id) for choice in choices],
+        "session_id": session_id,
+        "story_id": story.id,
+        "is_participant": is_participant,
+        "participants": [p.user_id for p in participants],
+        "user": user
+    })
+
+@app.post("/session/{session_id}/join")
+async def join_session(session_id: int, db: Session = Depends(get_db), user: User = Depends(current_active_user)):
+    session = db.query(Session).filter(Session.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if db.query(SessionParticipant).filter(SessionParticipant.session_id == session_id, SessionParticipant.user_id == user.id).first():
+        return RedirectResponse(url=f"/session/{session_id}", status_code=303)
+    participant = SessionParticipant(session_id=session_id, user_id=user.id)
+    db.add(participant)
+    db.commit()
+    return RedirectResponse(url=f"/session/{session_id}", status_code=303)
+
+@app.post("/session/{session_id}/{choice_id}")
+async def continue_session(session_id: int, choice_id: int, db: Session = Depends(get_db), user: User = Depends(current_active_user)):
+    session = db.query(Session).filter(Session.id == session_id).first()
+    if not session or not db.query(SessionParticipant).filter(SessionParticipant.session_id == session_id, SessionParticipant.user_id == user.id).first():
+        raise HTTPException(status_code=403, detail="Not a participant")
+    choice = db.query(ChoiceOption).filter(ChoiceOption.id == choice_id).first()
+    if not choice or choice.story_part.story_id != session.story_id:
+        raise HTTPException(status_code=404, detail="Choice not found")
+    
+    genre = session.story.title.split(':')[0].lower()
+    story_data = generate_story(choice.text, genre, is_continuation=True)
+
+    new_part = StoryPart(story_id=session.story_id, text=story_data["story"], previous_part_id=choice.story_part_id)
+    db.add(new_part)
+    db.commit()
+    db.refresh(new_part)
+
+    choice.next_part_id = new_part.id
+    db.commit()
+
+    choice_objects = [ChoiceOption(story_part_id=new_part.id, text=text) for text in story_data["choices"]]
+    db.add_all(choice_objects)
+    db.commit()
+
+    return RedirectResponse(url=f"/session/{session_id}", status_code=303)
+
 @app.get("/")
 async def root(request: Request, user: User = Depends(current_active_user)):
     return templates.TemplateResponse("index.html", {"request": request, "user": user})
