@@ -1,8 +1,9 @@
 import logging
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.templating import Jinja2Templates
-from database import engine  # Changed from .database
-from models import Base      # Changed from .models
+from sqlalchemy.orm import Session
+from database import engine, get_db  # Absolute imports
+from models import Base, User        # Absolute imports
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -18,8 +19,19 @@ try:
     logger.info("Database tables initialized successfully.")
 except Exception as e:
     logger.error(f"Failed to initialize database: {str(e)}")
-    raise  # Still raise to see the error in logs
+    raise
 
 @app.get("/")
 async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "message": "Welcome to StoryPath!"})
+
+@app.get("/test-user/{username}")
+async def test_user(username: str, db: Session = Depends(get_db)):
+    # Check if user exists, if not create one
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        user = User(username=username)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    return {"id": user.id, "username": user.username}
