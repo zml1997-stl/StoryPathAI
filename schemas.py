@@ -10,7 +10,7 @@ class UserRead(BaseModel):
     is_superuser: bool
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # Updated for Pydantic V2
 
 # Create schema (request)
 class UserCreate(BaseModel):
@@ -21,4 +21,4 @@ class UserCreate(BaseModel):
     is_superuser: Optional[bool] = False
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # Updated for Pydantic V2
