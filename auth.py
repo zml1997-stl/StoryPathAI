@@ -1,8 +1,8 @@
 import os
-from fastapi_users import FastAPIUsers, BaseUserManager, IntegerIDMixin
+from fastapi_users import FastAPIUsers, BaseUserManager, IntegerIDMixin, Integer  # Added Integer
 from fastapi_users.authentication import CookieTransport, AuthenticationBackend, JWTStrategy
 from fastapi_users.db import SQLAlchemyUserDatabase
-from models import Base, User  # Import Base and User from models.py
+from models import Base, User
 from database import get_db
 from fastapi import Depends
 from sqlalchemy.orm import Session
