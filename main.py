@@ -8,6 +8,7 @@ from database import engine, get_db
 from models import Base, Story, StoryPart, ChoiceOption, Session, SessionParticipant
 from story_generator import generate_story
 from auth import fastapi_users, auth_backend, current_active_user, User
+from schemas import UserRead, UserCreate  # Import new schemas
 import uvicorn
 
 app = FastAPI()
@@ -18,14 +19,14 @@ logger = logging.getLogger(__name__)
 # Create tables on startup (consider using migrations in production)
 Base.metadata.create_all(bind=engine)
 
-# Authentication routes
+# Authentication routes with schemas
 app.include_router(
-    fastapi_users.get_auth_router(auth_backend),
+    fastapi_users.get_auth_router(auth_backend, user_schema=UserRead, user_update_schema=UserRead),
     prefix="/auth/jwt",
     tags=["auth"],
 )
 app.include_router(
-    fastapi_users.get_register_router(),
+    fastapi_users.get_register_router(UserRead, UserCreate),  # Pass schemas here
     prefix="/auth",
     tags=["auth"],
 )
