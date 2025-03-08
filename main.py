@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from database import engine, get_db
 from models import Base, Story, StoryPart, ChoiceOption, Session, SessionParticipant
 from story_generator import generate_story
-from auth import fastapi_users, auth_backend, current_active_user, User
+from auth import fastapi_users, auth_backend, current_active_user, User, get_user_manager  # Added get_user_manager import
 from schemas import UserRead, UserCreate  # Import the schemas
 import uvicorn
 
@@ -25,12 +25,6 @@ app.include_router(
     prefix="/auth/jwt",
     tags=["auth"],
 )
-
-@app.get("/auth/logout")
-async def logout(request: Request):
-    response = RedirectResponse(url="/", status_code=303)
-    response.delete_cookie("fastapiusersauth")  # Clear the JWT cookie
-    return response
 
 # Add GET endpoint for registration form
 @app.get("/auth/register")
@@ -63,12 +57,12 @@ async def register(
 async def login_form(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
-# Note: We keep the original fastapi-users register router commented out if needed later
-# app.include_router(
-#     fastapi_users.get_register_router(UserRead, UserCreate),
-#     prefix="/auth",
-#     tags=["auth"],
-# )
+# Add logout endpoint
+@app.get("/auth/logout")
+async def logout(request: Request):
+    response = RedirectResponse(url="/", status_code=303)
+    response.delete_cookie("fastapiusersauth")  # Clear the JWT cookie
+    return response
 
 @app.get("/")
 async def root(request: Request, user: User = Depends(current_active_user)):
