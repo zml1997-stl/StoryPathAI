@@ -1,4 +1,5 @@
 import logging
+import os
 from fastapi import FastAPI, Request, Depends, Form, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
@@ -7,15 +8,17 @@ from database import engine, get_db
 from models import Base, Story, StoryPart, ChoiceOption, Session, SessionParticipant
 from story_generator import generate_story
 from auth import fastapi_users, auth_backend, current_active_user, User
+import uvicorn
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Create tables on startup (consider using migrations in production)
 Base.metadata.create_all(bind=engine)
 
-# Authentication routes with corrected JWT prefix
+# Authentication routes
 app.include_router(
     fastapi_users.get_auth_router(auth_backend),
     prefix="/auth/jwt",
@@ -283,3 +286,7 @@ async def continue_session(session_id: int, choice_id: int, db: Session = Depend
     db.commit()
 
     return RedirectResponse(url=f"/session/{session_id}", status_code=303)
+
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 8000))  # Heroku provides PORT, default to 8000 locally
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False, log_level="info")
