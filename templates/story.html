@@ -2,42 +2,84 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StoryPath - Your Story</title>
     <style>
         body {
-            font-family: 'Comic Sans MS', Arial, sans-serif;
+            font-family: 'Georgia', serif;
             background-color: #f0e4ff;
             text-align: center;
-            padding: 50px;
+            padding: 20px;
+            margin: 0;
+            color: #333;
         }
         h1 {
             color: #6a0dad;
-            font-size: 2.5em;
+            font-size: 2em;
+            margin-bottom: 20px;
         }
         .story {
             background-color: #fff;
             padding: 20px;
             border-radius: 10px;
-            text-align: left;
-            max-width: 600px;
-            margin: 20px auto;
+            text-align: justify;
+            max-width: 90%;
+            margin: 0 auto 20px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            line-height: 1.6;
+            font-size: 1.1em;
         }
         .choices {
-            margin-top: 20px;
+            max-width: 90%;
+            margin: 20px auto;
         }
-        button {
+        .choices h2 {
+            color: #6a0dad;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+        .choice-btn {
             background-color: #6a0dad;
             color: white;
-            padding: 10px 20px;
+            padding: 10px;
             border: none;
             border-radius: 5px;
             font-size: 1em;
-            margin: 5px;
+            margin: 5px 0;
             cursor: pointer;
+            width: 100%;
+            text-align: left;
+            display: block;
         }
-        button:hover {
+        .choice-btn:hover {
             background-color: #8a2be2;
+        }
+        a {
+            color: #6a0dad;
+            text-decoration: none;
+            font-size: 1em;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            .story {
+                font-size: 1em;
+                padding: 15px;
+            }
+            .choices h2 {
+                font-size: 1.2em;
+            }
+            .choice-btn {
+                font-size: 0.9em;
+                padding: 8px;
+            }
         }
     </style>
 </head>
@@ -47,9 +89,9 @@
         <p>{{ story }}</p>
     </div>
     <div class="choices">
-        <h2>Choose Your Path:</h2>
+        <h2>Choose Your Path</h2>
         {% for choice in choices %}
-            <button>{{ choice }}</button>
+            <button class="choice-btn">{{ choice }}</button>
         {% endfor %}
     </div>
     <p><a href="/generate">Start a New Story</a></p>
