@@ -1,7 +1,7 @@
 import os
-import requests
+import httpx
 
-def generate_story(prompt: str = "", genre: str = "fantasy", is_continuation: bool = False) -> dict:
+async def generate_story(prompt: str = "", genre: str = "fantasy", is_continuation: bool = False) -> dict:
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("GEMINI_API_KEY not set")
@@ -30,10 +30,11 @@ def generate_story(prompt: str = "", genre: str = "fantasy", is_continuation: bo
         ]
     }
 
-    response = requests.post(url, headers=headers, params=params, json=data)
-    response.raise_for_status()
-    result = response.json()
-    story_text = result.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "No story generated.")
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, params=params, json=data)
+        response.raise_for_status()
+        result = response.json()
+        story_text = result.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "No story generated.")
     
     lines = [line.strip() for line in story_text.split("\n") if line.strip()]
     choices = lines[-3:] if len(lines) >= 3 else [
