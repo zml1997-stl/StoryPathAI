@@ -21,7 +21,7 @@ Base.metadata.create_all(bind=engine)
 
 # Authentication routes with schemas
 app.include_router(
-    fastapi_users.get_auth_router(auth_backend),  # Removed invalid arguments
+    fastapi_users.get_auth_router(auth_backend),
     prefix="/auth/jwt",
     tags=["auth"],
 )
@@ -31,11 +31,38 @@ app.include_router(
 async def register_form(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
-app.include_router(
-    fastapi_users.get_register_router(UserRead, UserCreate),  # Schemas still required here
-    prefix="/auth",
-    tags=["auth"],
-)
+# Override POST /auth/register to accept form data
+@app.post("/auth/register")
+async def register(
+    username: str = Form(...),
+    email: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    user_manager = next(get_user_manager(db))  # Get the UserManager instance
+    try:
+        # Create the user using the UserManager
+        user = await user_manager.create(
+            UserCreate(username=username, email=email, password=password),
+            safe=True  # Prevents overwriting existing users
+        )
+        await user_manager.on_after_register(user)
+        return RedirectResponse(url="/auth/login", status_code=303)
+    except Exception as e:
+        logger.error(f"Registration failed: {e}")
+        return templates.TemplateResponse("register.html", {"request": Request, "error": str(e)})
+
+# Add GET endpoint for login form
+@app.get("/auth/login")
+async def login_form(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+# Note: We keep the original fastapi-users register router commented out if needed later
+# app.include_router(
+#     fastapi_users.get_register_router(UserRead, UserCreate),
+#     prefix="/auth",
+#     tags=["auth"],
+# )
 
 @app.get("/")
 async def root(request: Request, user: User = Depends(current_active_user)):
