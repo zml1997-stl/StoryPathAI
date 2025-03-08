@@ -21,16 +21,13 @@ async def root(request: Request):
 @app.get("/generate")
 async def generate_story_form(request: Request, db: Session = Depends(get_db)):
     genres = ["fantasy", "sci-fi", "horror", "mystery", "comedy", "action", "adventure", "romance", "drama"]
-    starters = []
     genre = request.query_params.get("genre", "fantasy")
     prompt = request.query_params.get("prompt", "")
-    for _ in range(3):
-        story_data = generate_story(prompt, genre)
-        starters.append(story_data["story"])
+    starters = [(i, generate_story(prompt, genre)["story"]) for i in range(3)]  # Pre-zip with indices
     return templates.TemplateResponse("generate.html", {
         "request": request,
         "genres": genres,
-        "starters": starters,
+        "starters": starters,  # Now a list of (index, story) tuples
         "selected_genre": genre,
         "prompt": prompt
     })
@@ -135,5 +132,4 @@ async def abandon_story(story_id: int, confirm: bool = Form(False), db: Session 
 
 @app.post("/save/{story_id}")
 async def save_story(story_id: int, db: Session = Depends(get_db)):
-    # For now, saving just means keeping it in the DB (already done); redirect back
     return RedirectResponse(url=f"/story/{story_id}", status_code=303)
