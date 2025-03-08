@@ -1,8 +1,8 @@
 import logging
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
-from .database import engine
-from .models import Base
+from database import engine  # Changed from .database
+from models import Base      # Changed from .models
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
