@@ -16,7 +16,7 @@ class Story(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     title = Column(String, nullable=False)
     user = relationship("User", back_populates="stories")
-    parts = relationship("Story", back_populates="story")
+    parts = relationship("StoryPart", back_populates="story")  # Fixed back_populates
 
 class StoryPart(Base):
     __tablename__ = "story_parts"
@@ -24,7 +24,7 @@ class StoryPart(Base):
     story_id = Column(Integer, ForeignKey("stories.id"), nullable=False)
     text = Column(String, nullable=False)
     previous_part_id = Column(Integer, ForeignKey("story_parts.id"), nullable=True)
-    story = relationship("Story", back_populates="parts")
+    story = relationship("Story", back_populates="parts")  # Matches Story.parts
     choices = relationship("ChoiceOption", back_populates="story_part", foreign_keys="ChoiceOption.story_part_id")
     previous_part = relationship("StoryPart", remote_side=[id])
 
