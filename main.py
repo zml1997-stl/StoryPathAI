@@ -37,9 +37,8 @@ async def register(
     username: str = Form(...),
     email: str = Form(...),
     password: str = Form(...),
-    db: Session = Depends(get_db)
+    user_manager=Depends(get_user_manager)  # Use Depends to get UserManager
 ):
-    user_manager = next(get_user_manager(db))  # Get the UserManager instance
     try:
         # Create the user using the UserManager
         user = await user_manager.create(
