@@ -1,9 +1,10 @@
 import logging
-from fastapi import FastAPI, Request, Depends, HTTPException
+from fastapi import FastAPI, Request, Depends, Form, HTTPException
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from database import engine, get_db  # Absolute imports
-from models import Base, User        # Absolute imports
+from database import engine, get_db
+from models import Base, User
+from story_generator import generate_story  # Absolute import
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-# Initialize database tables with error handling
+# Initialize database tables
 try:
     logger.info("Initializing database tables...")
     Base.metadata.create_all(bind=engine)
@@ -27,7 +28,6 @@ async def root(request: Request):
 
 @app.get("/test-user/{username}")
 async def test_user(username: str, db: Session = Depends(get_db)):
-    # Check if user exists, if not create one
     user = db.query(User).filter(User.username == username).first()
     if not user:
         user = User(username=username)
@@ -35,3 +35,23 @@ async def test_user(username: str, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(user)
     return {"id": user.id, "username": user.username}
+
+@app.get("/generate")
+async def generate_story_form(request: Request):
+    return templates.TemplateResponse("generate.html", {"request": request})
+
+@app.post("/generate")
+async def generate_story_submit(request: Request, prompt: str = Form(...), genre: str = Form(...)):
+    try:
+        story_data = generate_story(prompt, genre)
+        return templates.TemplateResponse("story.html", {
+            "request": request,
+            "story": story_data["story"],
+            "choices": story_data["choices"]
+        })
+    except Exception as e:
+        logger.error(f"Story generation failed: {str(e)}")
+        return templates.TemplateResponse("generate.html", {
+            "request": request,
+            "error": str(e)
+        })
