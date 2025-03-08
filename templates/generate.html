@@ -38,10 +38,10 @@
             <input type="hidden" name="genre" value="{{ selected_genre }}">
             <input type="hidden" name="prompt" value="{{ prompt }}">
             <input type="hidden" name="username" value="{{ request.query_params.get('username', 'guest') }}">
-            {% for i, starter in starters|enumerate %}
+            {% for index, starter in starters %}
                 <div class="starter">
                     <p>{{ starter }}</p>
-                    <button type="submit" name="starter" value="{{ i }}">Select This Start</button>
+                    <button type="submit" name="starter" value="{{ index }}">Select This Start</button>
                 </div>
             {% endfor %}
         </form>
