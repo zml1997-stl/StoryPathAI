@@ -26,6 +26,12 @@ app.include_router(
     tags=["auth"],
 )
 
+@app.get("/auth/logout")
+async def logout(request: Request):
+    response = RedirectResponse(url="/", status_code=303)
+    response.delete_cookie("fastapiusersauth")  # Clear the JWT cookie
+    return response
+
 # Add GET endpoint for registration form
 @app.get("/auth/register")
 async def register_form(request: Request):
