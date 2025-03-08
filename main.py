@@ -25,6 +25,12 @@ app.include_router(
     prefix="/auth/jwt",
     tags=["auth"],
 )
+
+# Add GET endpoint for registration form
+@app.get("/auth/register")
+async def register_form(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
+
 app.include_router(
     fastapi_users.get_register_router(UserRead, UserCreate),  # Schemas still required here
     prefix="/auth",
