@@ -1,9 +1,9 @@
 import os
 from fastapi_users import FastAPIUsers, BaseUserManager, IntegerIDMixin
 from fastapi_users.authentication import CookieTransport, AuthenticationBackend, JWTStrategy
-from fastapi_users.db import SQLAlchemyUserDatabase
+from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 from models import User
-from database import get_async_db  # Updated to async import
+from database import get_async_db
 from fastapi import Depends
 
 # Use the secret key from Heroku config vars, with a fallback for local testing
@@ -16,9 +16,8 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
     async def on_after_register(self, user: User, request=None):
         print(f"User {user.username} has registered.")
 
-# Define a callable function to create SQLAlchemyUserDatabase
 async def get_user_db(db=Depends(get_async_db)):
-    yield SQLAlchemyUserDatabase(User, db)
+    yield SQLAlchemyUserDatabase(db, User)
 
 async def get_user_manager(user_db=Depends(get_user_db)):
     yield UserManager(user_db)
