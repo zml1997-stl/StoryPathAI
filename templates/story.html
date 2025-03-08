@@ -50,6 +50,7 @@
             width: 100%;
             text-align: left;
             display: block;
+            text-decoration: none;
         }
         .choice-btn:hover {
             background-color: #8a2be2;
@@ -63,23 +64,11 @@
             text-decoration: underline;
         }
         @media (max-width: 600px) {
-            body {
-                padding: 10px;
-            }
-            h1 {
-                font-size: 1.5em;
-            }
-            .story {
-                font-size: 1em;
-                padding: 15px;
-            }
-            .choices h2 {
-                font-size: 1.2em;
-            }
-            .choice-btn {
-                font-size: 0.9em;
-                padding: 8px;
-            }
+            body { padding: 10px; }
+            h1 { font-size: 1.5em; }
+            .story { font-size: 1em; padding: 15px; }
+            .choices h2 { font-size: 1.2em; }
+            .choice-btn { font-size: 0.9em; padding: 8px; }
         }
     </style>
 </head>
@@ -91,7 +80,8 @@
     <div class="choices">
         <h2>Choose Your Path</h2>
         {% for choice in choices %}
-            <button class="choice-btn">{{ choice }}</button>
+            {% set choice_option = loop.index0 %}
+            <a href="/continue/{{ story_id }}/{{ story_part_id + choice_option }}" class="choice-btn">{{ choice }}</a>
         {% endfor %}
     </div>
     <p><a href="/generate">Start a New Story</a></p>
