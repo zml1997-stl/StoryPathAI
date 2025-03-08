@@ -8,7 +8,7 @@ from database import engine, get_db
 from models import Base, Story, StoryPart, ChoiceOption, Session, SessionParticipant
 from story_generator import generate_story
 from auth import fastapi_users, auth_backend, current_active_user, User
-from schemas import UserRead, UserCreate  # Import new schemas
+from schemas import UserRead, UserCreate  # Import the schemas
 import uvicorn
 
 app = FastAPI()
@@ -26,7 +26,7 @@ app.include_router(
     tags=["auth"],
 )
 app.include_router(
-    fastapi_users.get_register_router(UserRead, UserCreate),  # Pass schemas here
+    fastapi_users.get_register_router(UserRead, UserCreate),  # Use the defined schemas
     prefix="/auth",
     tags=["auth"],
 )
