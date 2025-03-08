@@ -2,26 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>StoryPath - Create Your Adventure</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoryPath</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0e4ff;
-            text-align: center;
-            padding: 50px;
-        }
-        h1 {
-            color: #6a0dad;
-            font-size: 2.5em;
-        }
-        p {
-            color: #333;
-            font-size: 1.2em;
-        }
+        body { font-family: 'Georgia', serif; background: #f0e4ff; text-align: center; padding: 20px; margin: 0; }
+        h1 { color: #6a0dad; font-size: 2em; margin-bottom: 20px; }
+        a { color: #6a0dad; text-decoration: none; font-size: 1.2em; margin: 10px; display: inline-block; }
+        a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-    <h1>{{ message }}</h1>
-    <p>Get ready to embark on a unique storytelling journey!</p>
+    <h1>Welcome to StoryPath</h1>
+    {% if user %}
+        <p>Hello, {{ user.username }}!</p>
+        <a href="/generate">Start a Story</a>
+        <a href="/sessions">Join a Session</a>
+        <a href="/auth/logout">Logout</a>
+    {% else %}
+        <p>Please log in or register to start your adventure.</p>
+        <a href="/auth/login">Login</a>
+        <a href="/auth/register">Register</a>
+    {% endif %}
 </body>
 </html>
