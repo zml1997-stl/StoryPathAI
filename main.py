@@ -45,7 +45,7 @@ async def generate_story_submit(
     request: Request,
     prompt: str = Form(...),
     genre: str = Form(...),
-    username: str = Form(default="guest"),  # Optional username for now
+    username: str = Form(default="guest"),
     db: Session = Depends(get_db)
 ):
     try:
@@ -72,18 +72,22 @@ async def generate_story_submit(
         db.commit()
         db.refresh(story_part)
 
-        # Save choices
+        # Save choices with proper IDs
+        choice_objects = []
         for choice_text in story_data["choices"]:
             choice = ChoiceOption(story_part_id=story_part.id, text=choice_text)
             db.add(choice)
+            choice_objects.append(choice)
         db.commit()
+        for choice in choice_objects:
+            db.refresh(choice)
 
         return templates.TemplateResponse("story.html", {
             "request": request,
             "story": story_data["story"],
-            "choices": story_data["choices"],
-            "story_id": story.id,
-            "story_part_id": story_part.id
+            "choices": [choice.text for choice in choice_objects],
+            "choice_ids": [choice.id for choice in choice_objects],
+            "story_id": story.id
         })
     except Exception as e:
         logger.error(f"Story generation failed: {str(e)}")
@@ -116,17 +120,21 @@ async def continue_story(request: Request, story_id: int, choice_id: int, db: Se
         db.refresh(new_part)
 
         # Save new choices
+        choice_objects = []
         for choice_text in story_data["choices"]:
             new_choice = ChoiceOption(story_part_id=new_part.id, text=choice_text)
             db.add(new_choice)
+            choice_objects.append(new_choice)
         db.commit()
+        for choice in choice_objects:
+            db.refresh(choice)
 
         return templates.TemplateResponse("story.html", {
             "request": request,
             "story": story_data["story"],
-            "choices": story_data["choices"],
-            "story_id": story_id,
-            "story_part_id": new_part.id
+            "choices": [choice.text for choice in choice_objects],
+            "choice_ids": [choice.id for choice in choice_objects],
+            "story_id": story_id
         })
     except Exception as e:
         logger.error(f"Continuing story failed: {str(e)}")
