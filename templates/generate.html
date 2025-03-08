@@ -60,31 +60,20 @@
             margin-top: 10px;
         }
         @media (max-width: 600px) {
-            body {
-                padding: 10px;
-            }
-            h1 {
-                font-size: 1.5em;
-            }
-            form {
-                padding: 15px;
-            }
-            label {
-                font-size: 1em;
-            }
-            select, input[type="text"] {
-                font-size: 0.9em;
-            }
-            button {
-                font-size: 1em;
-                padding: 8px;
-            }
+            body { padding: 10px; }
+            h1 { font-size: 1.5em; }
+            form { padding: 15px; }
+            label { font-size: 1em; }
+            select, input[type="text"] { font-size: 0.9em; }
+            button { font-size: 1em; padding: 8px; }
         }
     </style>
 </head>
 <body>
     <h1>Create Your Adventure</h1>
     <form method="post" action="/generate">
+        <label for="username">Your Username (optional):</label>
+        <input type="text" name="username" id="username" placeholder="e.g., adventurer1" value="guest">
         <label for="genre">Choose a Genre:</label>
         <select name="genre" id="genre">
             <option value="fantasy">Fantasy</option>
