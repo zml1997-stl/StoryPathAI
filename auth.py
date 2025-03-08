@@ -1,5 +1,5 @@
 import os
-from fastapi_users import FastAPIUsers, BaseUserManager, IntegerIDMixin, Integer  # Added Integer
+from fastapi_users import FastAPIUsers, BaseUserManager, IntegerIDMixin  # Removed Integer
 from fastapi_users.authentication import CookieTransport, AuthenticationBackend, JWTStrategy
 from fastapi_users.db import SQLAlchemyUserDatabase
 from models import Base, User
@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 # Use the secret key from Heroku config vars, with a fallback for local testing
 SECRET = os.environ.get("SECRET_KEY", "fallback-secret-for-local-only")
 
-class UserManager(IntegerIDMixin, BaseUserManager[User, Integer]):
+class UserManager(IntegerIDMixin, BaseUserManager[User, int]):  # Changed Integer to int
     reset_password_token_secret = SECRET
     verification_token_secret = SECRET
 
