@@ -21,12 +21,12 @@ Base.metadata.create_all(bind=engine)
 
 # Authentication routes with schemas
 app.include_router(
-    fastapi_users.get_auth_router(auth_backend, user_schema=UserRead, user_update_schema=UserRead),
+    fastapi_users.get_auth_router(auth_backend),  # Removed invalid arguments
     prefix="/auth/jwt",
     tags=["auth"],
 )
 app.include_router(
-    fastapi_users.get_register_router(UserRead, UserCreate),  # Use the defined schemas
+    fastapi_users.get_register_router(UserRead, UserCreate),  # Schemas still required here
     prefix="/auth",
     tags=["auth"],
 )
