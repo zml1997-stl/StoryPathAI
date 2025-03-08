@@ -5,6 +5,6 @@ psycopg2-binary
 requests
 jinja2
 python-multipart
-fastapi-users[sqlalchemy]Updated to support async
+fastapi-users[sqlalchemy]
 passlib[bcrypt]
 asyncpg
