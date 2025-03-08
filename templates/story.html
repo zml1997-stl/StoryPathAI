@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>StoryPath - Your Story</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', Arial, sans-serif;
+            background-color: #f0e4ff;
+            text-align: center;
+            padding: 50px;
+        }
+        h1 {
+            color: #6a0dad;
+            font-size: 2.5em;
+        }
+        .story {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: left;
+            max-width: 600px;
+            margin: 20px auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .choices {
+            margin-top: 20px;
+        }
+        button {
+            background-color: #6a0dad;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            margin: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #8a2be2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Your Story Begins</h1>
+    <div class="story">
+        <p>{{ story }}</p>
+    </div>
+    <div class="choices">
+        <h2>Choose Your Path:</h2>
+        {% for choice in choices %}
+            <button>{{ choice }}</button>
+        {% endfor %}
+    </div>
+    <p><a href="/generate">Start a New Story</a></p>
+</body>
+</html>
