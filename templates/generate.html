@@ -3,90 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StoryPath - Generate Your Story</title>
+    <title>StoryPath - Start Your Tale</title>
     <style>
-        body {
-            font-family: 'Georgia', serif;
-            background-color: #f0e4ff;
-            text-align: center;
-            padding: 20px;
-            margin: 0;
-        }
-        h1 {
-            color: #6a0dad;
-            font-size: 2em;
-            margin-bottom: 20px;
-        }
-        form {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            max-width: 90%;
-            margin: 0 auto;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        label {
-            font-size: 1.2em;
-            color: #333;
-            display: block;
-            margin: 10px 0 5px;
-        }
-        select, input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-            border: 2px solid #6a0dad;
-            border-radius: 5px;
-            font-size: 1em;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #6a0dad;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            font-size: 1.2em;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-        }
-        button:hover {
-            background-color: #8a2be2;
-        }
-        .error {
-            color: #ff4500;
-            font-size: 1.1em;
-            margin-top: 10px;
-        }
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            h1 { font-size: 1.5em; }
-            form { padding: 15px; }
-            label { font-size: 1em; }
-            select, input[type="text"] { font-size: 0.9em; }
-            button { font-size: 1em; padding: 8px; }
-        }
+        body { font-family: 'Georgia', serif; background: #f0e4ff; text-align: center; padding: 20px; margin: 0; }
+        h1 { color: #6a0dad; font-size: 2em; margin-bottom: 20px; }
+        form { background: #fff; padding: 20px; border-radius: 10px; max-width: 90%; margin: 0 auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        label { font-size: 1.2em; color: #333; display: block; margin: 10px 0 5px; }
+        select, input[type="text"] { width: 100%; padding: 10px; margin: 5px 0; border: 2px solid #6a0dad; border-radius: 5px; font-size: 1em; box-sizing: border-box; }
+        .starter { background: #fff; padding: 15px; margin: 10px 0; border-radius: 5px; text-align: justify; max-width: 90%; margin: 10px auto; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.3s ease; }
+        .starter:hover { transform: scale(1.02); }
+        button { background: #6a0dad; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-size: 1.2em; cursor: pointer; width: 100%; margin-top: 10px; transition: background 0.3s ease; }
+        button:hover { background: #8a2be2; }
+        @media (max-width: 600px) { body { padding: 10px; } h1 { font-size: 1.5em; } form { padding: 15px; } label { font-size: 1em; } select, input { font-size: 0.9em; } button { font-size: 1em; padding: 8px; } }
     </style>
 </head>
 <body>
-    <h1>Create Your Adventure</h1>
-    <form method="post" action="/generate">
-        <label for="username">Your Username (optional):</label>
-        <input type="text" name="username" id="username" placeholder="e.g., adventurer1" value="guest">
-        <label for="genre">Choose a Genre:</label>
+    <h1>Begin Your Adventure</h1>
+    <form method="get" action="/generate">
+        <label for="username">Username (optional):</label>
+        <input type="text" name="username" id="username" placeholder="e.g., storyteller" value="guest">
+        <label for="genre">Genre:</label>
         <select name="genre" id="genre">
-            <option value="fantasy">Fantasy</option>
-            <option value="sci-fi">Sci-Fi</option>
-            <option value="horror">Horror</option>
-            <option value="mystery">Mystery</option>
+            {% for genre in genres %}
+                <option value="{{ genre }}" {% if genre == selected_genre %}selected{% endif %}>{{ genre.capitalize() }}</option>
+            {% endfor %}
         </select>
-        <label for="prompt">Your Story Idea:</label>
-        <input type="text" name="prompt" id="prompt" placeholder="e.g., A lost astronaut on a strange planet" required>
-        <button type="submit">Generate Story</button>
+        <label for="prompt">Story Direction (optional):</label>
+        <input type="text" name="prompt" id="prompt" placeholder="e.g., A dragon in a cave" value="{{ prompt }}">
+        <button type="submit">Generate Starters</button>
     </form>
-    {% if error %}
-        <p class="error">{{ error }}</p>
+    {% if starters %}
+        <h2>Choose Your Start</h2>
+        <form method="post" action="/start">
+            <input type="hidden" name="genre" value="{{ selected_genre }}">
+            <input type="hidden" name="prompt" value="{{ prompt }}">
+            <input type="hidden" name="username" value="{{ request.query_params.get('username', 'guest') }}">
+            {% for i, starter in starters|enumerate %}
+                <div class="starter">
+                    <p>{{ starter }}</p>
+                    <button type="submit" name="starter" value="{{ i }}">Select This Start</button>
+                </div>
+            {% endfor %}
+        </form>
     {% endif %}
 </body>
 </html>
