@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request, Depends, Form, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from database import async_engine as engine, get_async_db  # Updated to async import
+from database import async_engine as engine, get_async_db
 from models import Base, Story, StoryPart, ChoiceOption, Session, SessionParticipant
 from story_generator import generate_story
 from auth import fastapi_users, auth_backend, current_active_user, User, get_user_manager
@@ -21,24 +21,23 @@ async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-# Run init_db on startup
 @app.on_event("startup")
 async def startup_event():
     await init_db()
 
-# Authentication routes with schemas
+# Authentication routes
 app.include_router(
     fastapi_users.get_auth_router(auth_backend),
     prefix="/auth/jwt",
     tags=["auth"],
 )
 
-# Add GET endpoint for registration form
+# Registration form
 @app.get("/auth/register")
 async def register_form(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
-# Override POST /auth/register to accept form data
+# Register endpoint with form data
 @app.post("/auth/register")
 async def register(
     username: str = Form(...),
@@ -55,18 +54,18 @@ async def register(
         return RedirectResponse(url="/auth/login", status_code=303)
     except Exception as e:
         logger.error(f"Registration failed: {e}")
-        return templates.TemplateResponse("register.html", {"request": Request, "error": str(e)})
+        return templates.TemplateResponse("register.html", {"request": request, "error": str(e)})
 
-# Add GET endpoint for login form
+# Login form
 @app.get("/auth/login")
 async def login_form(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
-# Add logout endpoint
+# Logout
 @app.get("/auth/logout")
 async def logout(request: Request):
     response = RedirectResponse(url="/", status_code=303)
-    response.delete_cookie("fastapiusersauth")  # Clear the JWT cookie
+    response.delete_cookie("fastapiusersauth")
     return response
 
 @app.get("/")
@@ -206,7 +205,7 @@ async def abandon_story(story_id: int, confirm: bool = Form(False), db: AsyncSes
         db.delete(story)
         await db.commit()
         return RedirectResponse(url="/generate", status_code=303)
-    return templates.TemplateResponse("confirm_abandon.html", {"request": Request, "story_id": story_id, "user": user})
+    return templates.TemplateResponse("confirm_abandon.html", {"request": request, "story_id": story_id, "user": user})
 
 @app.post("/save/{story_id}")
 async def save_story(story_id: int, db: AsyncSession = Depends(get_async_db), user: User = Depends(current_active_user)):
